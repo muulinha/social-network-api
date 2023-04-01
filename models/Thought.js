@@ -1,10 +1,7 @@
 const { Schema, model, Types } = require("mongoose");
-// const dateFormat = require("../utils/dateFormat");
 
-// create a new instane of mongoose schema to define shape of Reaction documents
 const reactionSchema = new Schema(
   {
-    // add properties and their types
     reactionId: {
       type: Schema.Types.ObjectId,
       default: () => new Types.ObjectId(),
