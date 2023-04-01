@@ -1,45 +1,46 @@
-const { Schema, model } = require('mongoose');
+// define mongoose
+const { Schema, model } = require("mongoose");
 
-// Schema to create User model
+// function to validate email
+var validateEmail = function (email) {
+  var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  return re.test(email);
+};
+
+// create a new instane of mongoose schema to define shape of User document
 const userSchema = new Schema(
-  username : {
-    type: String,
-    required: true,
-    trim: true,
-    unique: true
-  },
-  
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    match: '/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/'
+  {
+    // add properties and their types
+    username: { type: String, unique: true, require: true, trimmed: true },
+    email: {
+      type: String,
+      unique: true,
+      require: "email address is require",
+      validate: [validateEmail, "Please fill a valid email address"],
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        "Please fill a valid email address",
+      ],
+    },
+    // agregation of thoughs and friends
+    thoughts: [{ type: Schema.Types.ObjectID, ref: "Thought" }],
+    friends: [{ type: Schema.Types.ObjectID, ref: "User" }],
   },
   {
-    // Mongoose supports two Schema options to transform Objects after querying MongoDb: toJSON and toObject.
-    // Here we are indicating that we want virtuals to be included with our response, overriding the default behavior
     toJSON: {
       virtuals: true,
+      getters: true,
     },
     id: false,
   }
 );
 
-// Create a virtual property `commentCount` that gets the amount of comments per user
-userSchema
-  .virtual('fullName')
-  // Getter
-  .get(function () {
-    return `${this.first} ${this.last}`;
-  })
-  // Setter to set the first and last name
-  .set(function (v) {
-    const first = v.split(' ')[0];
-    const last = v.split(' ')[1];
-    this.set({ first, last });
-  });
+// virtual called property 'friendCount' to get the friends per user
+userSchema.virtual("friendCount").get(function () {
+  return this.friends.lenght;
+});
 
-// Initialize our User model
-const User = model('user', userSchema);
+// create a User model using the usersSchema
+const User = model("User", userSchema);
 
 module.exports = User;
